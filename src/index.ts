@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import type { Context } from 'hono';
 import { apiKeyAuth } from './auth.js';
-import { createMcpTransport, mcpServer } from './mcp.js';
+import { handleMcpRequest } from './mcp.js';
 
 const app = new Hono();
 
@@ -74,20 +74,7 @@ app.use('*', async (c, next) => {
 
 app.post('/mcp', async (c: Context) => {
   try {
-    const transport = createMcpTransport();
-
-    const request = new Request(c.req.url, {
-      method: c.req.method,
-      headers: c.req.raw.headers,
-      body: c.req.raw.body ?? null
-    });
-
-    const response = await transport.handleRequest(request);
-
-    const textBody = await response.text();
-    const headers = Object.fromEntries(response.headers.entries());
-
-    return c.body(textBody, response.status, headers);
+    return await handleMcpRequest(c.req.raw);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[todo-mcp-server] /mcp error:', error);
@@ -128,7 +115,4 @@ app.all('/mcp', async (c: Context) => {
   }
 });
 
-void mcpServer;
-
 export default app;
-

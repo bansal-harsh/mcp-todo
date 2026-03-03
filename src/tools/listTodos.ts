@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, type SQL } from 'drizzle-orm';
 import { getDb } from '../db/client.js';
 import {
   todos,
@@ -40,7 +40,7 @@ export async function executeListTodos(
     const parsed = listTodosInputSchema.parse(input);
     const db = getDb();
 
-    const conditions: unknown[] = [];
+    const conditions: SQL<unknown>[] = [];
 
     if (parsed.status) {
       conditions.push(eq(todos.status, parsed.status));
@@ -50,9 +50,11 @@ export async function executeListTodos(
     }
 
     const whereClause =
-      conditions.length > 0
-        ? and(...(conditions as [unknown, ...unknown[]]))
-        : undefined;
+      conditions.length === 0
+        ? undefined
+        : conditions.length === 1
+          ? conditions[0]
+          : and(...conditions);
 
     const results = await db.query.todos.findMany({
       where: whereClause,
@@ -78,4 +80,3 @@ export async function executeListTodos(
     };
   }
 }
-

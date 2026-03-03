@@ -2,9 +2,12 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import type { Context } from 'hono';
+import { loadEnv } from './env.js';
 import { apiKeyAuth } from './auth.js';
 import { handleMcpRequest } from './mcp.js';
 import { executeListTodos } from './tools/listTodos.js';
+
+loadEnv();
 
 const app = new Hono();
 
@@ -235,7 +238,7 @@ app.use('*', async (c, next) => {
     await next();
     return;
   }
-  await apiKeyAuth(c, next);
+  return await apiKeyAuth(c, next);
 });
 
 app.post('/mcp', async (c: Context) => {

@@ -126,4 +126,5 @@ All tools return either `{ "success": true, "data": ... }` or `{ "success": fals
 npm run db:push
 npm run db:studio
 ```
+runs on http://localhost:3000/
 
